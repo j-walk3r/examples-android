@@ -1,0 +1,4 @@
+Simple Adapter 
+  ** mas usado desta forma,para criar dilogs persolaizados(AlertBuider's)
+  
+SimpleAdapter adapter = new SimpleAdapter(context,data, R.layout.my_four_line_red, new  String[]{"titulo","qt","valor","data"}, new int[]{R.id.line4_a,R.id.line4_b,R.id.line4_c,R.id.line4_d});
