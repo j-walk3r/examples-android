@@ -1,0 +1,115 @@
+ProgressDialog(onde o código que será executado fará modificacao na UI da activity)
+
+##Classe
+
+progressDialog = ProgressDialog.show(context, "Title!", "MSG...", true);
+
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //código a ser carregado... 
+                }
+                runOnUiThread(new Runnable() {     //para alterar UI numa activity tem que se uar UIThred  
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();   //fechar o dialog ao fim da tarefe que foi iniciada acima
+                        updateDisplay(); // usado um para que se possa alterar algo na UI da activity
+                    }
+                });
+            }
+        });
+
+        t.start();
+
+##Classe
+
+###Layout
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="fill_parent">
+        
+        <TextView
+            android:id="@+id/titulo_progress1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="17dp"
+            android:layout_marginTop="12dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_alignParentLeft="true"
+        />
+        <ProgressBar android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dip"
+            android:layout_marginBottom="1dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_centerHorizontal="true" 
+            android:layout_below="@id/titulo_progress1"
+            />
+            <TextView
+            android:id="@+id/progress_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/progress"
+        />
+        <TextView
+            android:id="@+id/progress_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dip"
+            android:layout_marginLeft="50dip"
+            android:layout_marginRight="15dip"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/progress"
+        />
+    
+    <TextView
+        android:id="@+id/titulo_progress2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15dp"
+        android:layout_marginTop="12dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/progress_number"
+    />
+    <ProgressBar android:id="@+id/secondaryProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dip"
+        android:layout_marginBottom="1dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/titulo_progress2" />
+    <TextView
+        android:id="@+id/secondary_progress_percent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="12dip"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/secondaryProgress"
+    />
+    <TextView
+        android:id="@+id/secondary_progress_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="12dip"
+        android:layout_marginLeft="50dip"
+        android:layout_marginRight="15dip"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/secondaryProgress"
+    />
+</RelativeLayout>
+
+##Layout
