@@ -1,0 +1,115 @@
+example simple de shared preferences
+
+public abstract class PrefCarrinho {
+
+    public static final String PREF_ID = "MobiServices";
+    private static Carrinho carrinho;
+    private static boolean rodandoThread = false;
+
+    /***
+     * Metodo Responsavel por escrever dados desejaveis para serem salvos no sharedPreferences
+     * o primeiro parametro é um contexto, o segundo parametro é a key do dado a ser salvdo, o terceiro parametro é o valor a ser salvo
+     */
+
+    public static void setString (Context context, String key, String value){
+        SharedPreferences preferences = context.getSharedPreferences(PREF_ID, 0);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    /**
+     * Metodo responsavel por realizar a busca por uma determinada key que foi salva no sharedPreferences
+     * o primeiro para é o contexto e o segundo parametro é a key a ser buscadaß
+     */
+    public static String getString (Context context, String key){
+        SharedPreferences preferences = context.getSharedPreferences(PREF_ID, 0);
+        String valor = preferences.getString(key, "");
+        return valor;
+    }
+
+
+    public static void clearCarrinho(Context context)
+    {
+        setString(context,"carrinho","");
+        FuncoesVenda.limparVendaCarrinho();
+
+    }
+
+    public static void carregarCarrinho(Context context)
+    {
+        //carrinho = null;
+
+        Gson gson = new Gson();
+        Carrinho car = new Carrinho(); //criando instancia carrinho(GAMBI POR CAUSA DO SINGLETON)
+        car = gson.fromJson(getString(context, "carrinho"), Carrinho.class);//RETORNA OS DADOS DO CARRINHO QUE ESTAO SALVOS NO SHARED
+
+        carrinho = Carrinho.getInstance();
+
+        carrinho.setProdutosComDescontoVenda(car.getProdutosComDescontoVenda());
+        carrinho.setProdutos(car.getProdutos());
+        carrinho.setDesconto(car.getDesconto());
+        carrinho.setCliente(car.getCliente());
+        carrinho.setCodigo_carrinho(car.getCodigo_carrinho());
+        carrinho.setCodigo_cliente(car.getCodigo_cliente());
+        carrinho.setCodigo_forma_pagamento(car.getCodigo_forma_pagamento());
+        carrinho.setCodigo_tabela_preco(car.getCodigo_tabela_preco());
+        carrinho.setData_hora_venda(car.getData_hora_venda());
+        carrinho.setFilial(car.getFilial());
+        carrinho.setObservacao(car.getObservacao());
+        carrinho.setTipo_venda(car.getTipo_venda());
+        carrinho.setProdutosComDescontoItem(car.getProdutosComDescontoItem());
+        carrinho.setProdutosSemDescontoVenda(car.getProdutosSemDescontoVenda());
+        carrinho.setValor_desconto_geral(car.getValor_desconto_geral());
+        carrinho.setValor_total_venda(car.getValor_total_venda());
+
+    }
+
+    public static void salvarCarrinho(final Context context)
+    {
+        while(rodandoThread)
+        {}
+
+        new Thread(new Runnable() {
+            @Override
+            public void run()
+            {
+                Log.e("salvarCarrinho", "entrou");
+                rodandoThread = true;
+
+                carrinho = Carrinho.getInstance();
+
+                Gson gson = new Gson();
+
+                String dados = gson.toJson(carrinho);
+
+                setString(context,"carrinho",dados);
+                Log.e("salvarCarrinho", "salvou");
+
+                rodandoThread = false;
+                Log.e("salvarCarrinho", "saiu");
+            }
+        }).start();
+
+
+
+    }
+}
+
+###### Usos  ######
+
+>obtendo string armazenado no shared:
+
+  String dados = PrefCarrinho.getString(VendaActivity.this, "carrinho");
+
+>salvando dados no prefs:
+
+  PrefCarrinho.salvarCarrinho(VendaActivity.this);
+
+>chamando uma função criada dentro do prefs:
+
+  PrefCarrinho.carregarCarrinho(VendaActivity.this);
+
+>limpadado dados salvos dentro do pres:
+
+  PrefCarrinho.clearCarrinho(VendaActivity.this);
