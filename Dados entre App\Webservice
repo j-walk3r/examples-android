@@ -1,0 +1,216 @@
+------------------------Exmplos códigos parte android----------------------------------
+
+1- >> Pegar dados do banco do mobile e enviar para um webservice:
+
+/***************** MENSAGEM ************************/
+						//ENVIAR MENSAGEM
+						db = BD.AbreBancoFilaSaida(Constantes.getCtxAtual());
+ 						cursor = db.rawQuery("SELECT * FROM mensagem WHERE status = 0 AND tipo_caminho_mensagem = 0", null);
+						cursor.moveToFirst();
+						try
+						{
+							if (cursor.moveToFirst())
+							{
+								do  //verificar por que nao foi achado msg pra enviar , por isso que a msg nao chega na web
+								{
+									int aiMensagem = cursor.getInt(cursor.getColumnIndex("ai"));
+
+									//Monta o ARRAY dos FLUXOS
+									List<BasicNameValuePair> Params = new ArrayList<BasicNameValuePair>();
+									Params.add(new BasicNameValuePair("metodo", "RecebeMensagem"));
+									Params.add(new BasicNameValuePair("codigo_usuario_envia", cursor.getString(cursor.getColumnIndex("codigo_usuario_envia"))));
+									Params.add(new BasicNameValuePair("codigo_usuario_recebe", cursor.getString(cursor.getColumnIndex("codigo_usuario_destino"))));
+									Params.add(new BasicNameValuePair("data_hora", cursor.getString(cursor.getColumnIndex("data_hora"))));
+									Params.add(new BasicNameValuePair("mensagem", cursor.getString(cursor.getColumnIndex("mensagem"))));
+
+									String JSON = FuncoesGlobal.executeHttptPostData(Constantes.getURLWebService(),Params);
+
+									if(JSON == null)
+									{
+										JSON = "";
+									}
+
+									if(!JSON.equals(""))
+									{
+										JSONArray ArrJSON = new JSONArray(JSON);
+										JSONObject PosicaoJSON = new JSONObject(ArrJSON.getString(0));
+										int Valido = PosicaoJSON.getInt("valido");
+										if(Valido == 1)//Se Enviou, marca como Enviado
+										{
+											int codigo_mensagem_web = PosicaoJSON.getInt("codigo_mensagem_web");
+
+											String SQL = "UPDATE mensagem SET status = 1, codigo_mensagem_web = "+codigo_mensagem_web+" WHERE ai = "+aiMensagem;
+											db.execSQL(SQL.toString());
+										}
+									}
+								}
+								while (cursor.moveToNext());
+							}
+							if (cursor != null)
+							{
+								cursor.close();
+							}
+						}
+						catch (Exception e)
+						{
+							BD.FechaBancoFilaSaida(db);
+							e.printStackTrace();
+						}
+						finally {
+							if (cursor != null)
+							{
+								cursor.close();
+								BD.FechaBancoFilaSaida(db);
+							}
+						}
+            
+---- fim            
+2 - >> Classe que tem o metodo que eh resposavel pelo envio do arquivo para o web service
+..............................................................................................
+.    String JSON = FuncoesGlobal.executeHttptPostData(Constantes.getURLWebService(),Params); .
+..............................................................................................
+
+public static String executeHttptPostData(String URL, List<BasicNameValuePair> Params)
+	{
+		String Retorna = null;
+		try
+		{
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpPost httppost = new HttpPost(URL.toString().toLowerCase());
+			httppost.setEntity(new UrlEncodedFormEntity(Params));
+			HttpResponse response = httpclient.execute(httppost);
+
+			Retorna = EntityUtils.toString(response.getEntity());
+			Retorna = Retorna.replaceAll("ï»¿", "");
+		}
+		catch(Exception e)
+		{
+			System.out.println("Erro no WEBSERVICE");
+		}
+		return Retorna;
+	}
+
+---- fim
+
+------------------------Exmplos códigos parte php----------------------------------
+
+
+
+if($_REQUEST['metodo'] == 'RecebeMensagem')
+{
+	$Dados = array();
+	
+	$codigo_usuario_envia	= $_REQUEST['codigo_usuario_envia'];
+	$codigo_usuario_recebe 	= $_REQUEST['codigo_usuario_recebe'];
+	$data_hora 				= $_REQUEST['data_hora'];//2015-03-29 23:47:09
+	$mensagem 				= $_REQUEST['mensagem'];
+	
+	$SQL = " INSERT INTO pmob_mensagem (
+											codigo_usuario,
+											codigo_usuario_inseriu,
+											codigo_usuario_inseriu_mobile,
+											mensagem,
+											datahora_msg,
+											status_msg,
+											movimento,
+											codigo_usuario_destino,
+											datahora_comunicacao
+										) 
+									VALUES 
+										(
+											'".$codigo_usuario_recebe."',
+											'".$codigo_usuario_envia."',
+											'".$codigo_usuario_envia."',
+											'".$mensagem."',
+											'".$data_hora."',
+											'0',
+											'0',
+											'".$codigo_usuario_recebe."',
+											now()
+										)";
+
+	$Query = mysql_query($SQL,$ConexaoMy);
+	
+	$Dados[0]['valido'] = 0;
+	if($Query)
+	{
+		$codigo_mensagem_web = mysql_insert_id($ConexaoMy);
+	
+		$Dados[0]['valido'] 			 = 1;
+		$Dados[0]['codigo_mensagem_web'] = $codigo_mensagem_web;
+	}
+	
+	
+	echo json_encode($Dados);
+	die();
+}
+
+-----------Conexão com banco my sql-----------
+
+<?php
+// conexao com mysql
+function DBConnectMy()
+{	
+	$link = mysql_connect('localhost','user', 'senha');
+	
+	//$link = mysql_connect('localhost','root', '');
+	mysql_select_db('nome do banco', $link);
+	
+	
+	return $link;
+	
+}
+
+function DBClose($Conexao)
+{
+	@mysql_close($Conexao);
+}
+
+function anti_sql($texto)
+{
+	$check[1] = chr(34); // símbolo "
+	$check[2] = chr(39); // símbolo '
+	$check[3] = chr(92); // símbolo /
+	$check[4] = chr(96); // símbolo `
+	$check[5] = "drop table";
+	$check[6] = "update";
+	$check[7] = "alter table";
+	$check[8] = "drop database";	
+	$check[9] = "drop";
+	$check[10] = "select";
+	$check[11] = "delete";
+	$check[12] = "insert";
+	$check[13] = "alter";
+	$check[14] = "destroy";
+	$check[15] = "table";
+	$check[16] = "database";
+	$check[17] = "union";
+	$check[18] = "TABLE_NAME";
+	$check[19] = "1=1";
+	$check[20] = 'or 1';
+	$check[21] = 'exec';
+	$check[22] = 'INFORMATION_SCHEMA';
+	$check[23] = 'like';
+	$check[24] = 'COLUMNS';
+	$check[25] = 'into';
+	$check[26] = 'VALUES';
+	$check[27] = '--';
+	$check[28] = '-';
+	// Cria se as variáveis $y e $x para controle no WHILE que fará a busca e substituição
+	$y = 1;
+	$x = sizeof($check);
+	// Faz-se o WHILE, procurando alguma das palavras especificadas acima, caso encontre alguma delas, este script substituirá por um espaço em branco " ".
+	while($y <= $x)
+	{
+		$target = strpos($texto,$check[$y]);
+		if($target !== false)
+		{
+			$texto = str_replace($check[$y], "", $texto);
+		}
+		$y++;
+	}
+
+	// Retorna a variável limpa sem perigos de SQL Injection
+	return $texto;
+} 
+?>
