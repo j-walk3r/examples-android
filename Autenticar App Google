@@ -1,0 +1,10 @@
+https://developers.google.com/android/guides/client-auth
+
+abrir o cmd, navegar até a pasta bin do jdk do java e digitar  o seguinte comando:
+
+keytool -exportcert -list -v 
+-alias "nome dado a key" -keystore "C:/Users/username/workspace Android Studio/MeuApp/keystore.jks"
+
+digitar o password da keystore;
+
+e copiar o SHA1.
